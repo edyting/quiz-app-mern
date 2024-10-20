@@ -3,6 +3,7 @@ import Signin from './Signin';
 import Signup from './signup';
 import axios from "axios";
 import "./Auth.css"
+import store from '../../store/index';
 
 export default class Auth extends Component {
     constructor(props){
@@ -13,11 +14,41 @@ export default class Auth extends Component {
     }
 
     signIn = (email,password)=>{
-
+      axios.post('/api/users/login', {email, password}).then(res => {
+        if (res.data.success) {
+            store.dispatch({
+                type: 'login',
+                _id: res.data.user._id,
+                user: res.data.user,
+                token: res.data.token
+            });
+            this.props.history.push('/dashboard');
+        } else {
+            this.setState({
+                showToast: true
+            });
+            setTimeout(() => {
+                this.setState({showToast: false})
+            }, 3000);
+        }
+    }).catch(er => {
+        this.setState({
+            showToast: true
+        });
+        setTimeout(() => {
+            this.setState({showToast: false})
+        }, 3000);
+    })
     }
 
     signUp = (firstName,lastName,email,password) =>{
-
+      axios.post('/api/users/register', {firstName, lastName, email, password}).then(res => {
+        if (res.data.success) {
+            this.setState({tab: 'signin'});
+        }
+    }).catch(er => {
+        console.log(er);
+    })
     }
 
     changeTab = ()=>{
